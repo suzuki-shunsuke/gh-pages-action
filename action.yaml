@@ -109,15 +109,22 @@ runs:
         branch=${BRANCH_NAME:-${default_branch}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
 
+        changed_files=$(mktemp)
+        pushd "$DIR"
+        git ls-files "$DEST" > "$changed_files" 
+        popd
+
         rm -Rf "$DIR/$DEST"
         cp -R "$SOURCE" "$DIR/$DEST"
         cd "$DIR"
+        git ls-files "$DEST" >> "$changed_files" 
 
         tempfile=$(mktemp)
-        ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" "$DEST" 2> >(tee -a "$tempfile" >&2)
+        sort -u < "$changed_files" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
         if grep -q "Nothing to commit" "$tempfile"; then
           exit 0
         fi
+        rm "$changed_files"
 
         if [ "$repo" != "$GITHUB_REPOSITORY" ] || [ "$branch" != "$default_branch"  ]; then
           exit 0
