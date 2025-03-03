@@ -37,6 +37,9 @@ inputs:
   external_repository:
     description: 'Set an external repository (owner/repo).'
     required: false
+  cname:
+    description: 'Set custom domain'
+    required: false
 runs:
   using: composite
   steps:
@@ -110,22 +113,15 @@ runs:
         branch=${BRANCH_NAME:-${default_branch}}
         repo=${REPOSITORY:-$GITHUB_REPOSITORY}
 
-        changed_files=$(mktemp)
-        pushd "$DIR"
-        git ls-files "$DEST" > "$changed_files" 
-        popd
-
         rm -Rf "$DIR/$DEST"
         cp -R "$SOURCE" "$DIR/$DEST"
         pushd "$DIR"
-        git ls-files --modified --others --exclude-standard "$DEST" >> "$changed_files" 
 
         tempfile=$(mktemp)
-        sort -u < "$changed_files" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
+        git ls-files --modified --others --exclude-standard "$DEST" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
         if grep -q "Nothing to commit" "$tempfile"; then
           exit 0
         fi
-        rm "$changed_files"
 
         popd
         rm -Rf "$DIR"
