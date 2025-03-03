@@ -70,7 +70,7 @@ runs:
         persist-credentials: false
         path: ${{ steps.dir.outputs.value }}
         sparse-checkout: |
-          ${{ inputs.publish_dir }}
+          ${{ inputs.destination_dir }}
 
     - uses: suzuki-shunsuke/github-token-action@350d7506222e3a0016491abe85b5c4dd475b67d1 # v0.2.1
       id: token
