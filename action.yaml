@@ -64,12 +64,13 @@ runs:
       run: echo "value=.gh-pages-action-$GITHUB_RUN_ID" >> "$GITHUB_OUTPUT"
 
     - uses: actions/checkout@v4.2.2
-      if: inputs.external_repository != '' || inputs.publish_branch != ''
       with:
         repository: ${{ inputs.external_repository }}
         ref: ${{ inputs.publish_branch }}
         persist-credentials: false
         path: ${{ steps.dir.outputs.value }}
+        sparse-checkout: |
+          ${{ inputs.publish_dir }}
 
     - uses: suzuki-shunsuke/github-token-action@350d7506222e3a0016491abe85b5c4dd475b67d1 # v0.2.1
       id: token
@@ -116,7 +117,7 @@ runs:
 
         rm -Rf "$DIR/$DEST"
         cp -R "$SOURCE" "$DIR/$DEST"
-        cd "$DIR"
+        pushd "$DIR"
         git ls-files --modified --others --exclude-standard "$DEST" >> "$changed_files" 
 
         tempfile=$(mktemp)
@@ -125,6 +126,9 @@ runs:
           exit 0
         fi
         rm "$changed_files"
+
+        popd
+        rm -Rf "$DIR"
 
         if [ "$repo" != "$GITHUB_REPOSITORY" ] || [ "$branch" != "$default_branch"  ]; then
           exit 0
