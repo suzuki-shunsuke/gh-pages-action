@@ -108,6 +108,7 @@ runs:
         SOURCE: ${{ inputs.publish_dir }}
         DEST: ${{ inputs.destination_dir }}
         DIR: ${{ steps.dir.outputs.value }}
+        CNAME: ${{ inputs.cname }}
       run: |
         default_branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
         branch=${BRANCH_NAME:-${default_branch}}
@@ -116,6 +117,12 @@ runs:
         rm -Rf "$DIR/$DEST"
         cp -R "$SOURCE" "$DIR/$DEST"
         pushd "$DIR"
+
+        touch "$DEST/.nojekyll"
+
+        if [ -n "$CNAME" ]; then
+          echo "$CNAME" > "$DEST/CNAME"
+        fi
 
         tempfile=$(mktemp)
         git ls-files --modified --others --exclude-standard "$DEST" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
