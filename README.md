@@ -21,9 +21,9 @@ It's bothersome to manage GPG keys and SSH keys properly for automation, so it's
 
 You can use the following things:
 
-- :thumbsup: GitHub App Installation access token: We recommend this
+- `${{secrets.GITHUB_TOKEN}}`: This can't trigger new workflow runs.
+- GitHub App Installation access token
 - :thumbsdown: GitHub Personal Access Token: This can't create verified commits
-- :thumbsdown: `${{secrets.GITHUB_TOKEN}}`: This can't trigger new workflow runs.
 
 https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow
 
