@@ -18,14 +18,10 @@ inputs:
     description: |
       GitHub App Private Key
     required: false
-  commit_message:
-    description: |
-      Commit message
-    required: false
-    default: "commit changes"
   publish_branch:
     description: 'Set a target branch for deployment.'
     required: false
+    default: gh-pages
   publish_dir:
     description: 'Set an input directory for deployment.'
     required: false
@@ -117,7 +113,9 @@ runs:
         REPO: ${{ steps.repo_name.outputs.full_name }}
         GITHUB_TOKEN: ${{steps.token.outputs.token}}
         BRANCH: ${{inputs.publish_branch}}
-        MESSAGE: "chore: create a branch"
+        MESSAGE: |
+          create a branch: ${{ github.repository}}@${{ github.sha }}
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
@@ -133,7 +131,9 @@ runs:
       env:
         GITHUB_TOKEN: ${{ steps.token.outputs.token }}
         AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
-        MESSAGE: ${{ inputs.commit_message }}
+        MESSAGE: |
+          deploy: ${{ github.repository}}@${{ github.sha }}
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         BRANCH_NAME: ${{ inputs.publish_branch }}
         REPOSITORY: ${{ inputs.external_repository }}
         SOURCE: ${{ inputs.publish_dir }}
