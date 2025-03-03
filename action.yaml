@@ -117,7 +117,7 @@ runs:
         rm -Rf "$DIR/$DEST"
         cp -R "$SOURCE" "$DIR/$DEST"
         cd "$DIR"
-        git ls-files "$DEST" >> "$changed_files" 
+        git ls-files --modified --others --exclude-standard "$DEST" >> "$changed_files" 
 
         tempfile=$(mktemp)
         sort -u < "$changed_files" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
