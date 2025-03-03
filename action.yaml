@@ -1,0 +1,132 @@
+name: GitHub Pages
+description: GitHub Pages
+author: Shunsuke Suzuki
+branding:
+  icon: git-commit
+  color: blue
+inputs:
+  github_token:
+    description: |
+      GitHub Access Token
+      contents:write - Push commits
+    required: false
+  app_id:
+    description: |
+      GitHub App ID
+    required: false
+  app_private_key:
+    description: |
+      GitHub App Private Key
+    required: false
+  commit_message:
+    description: |
+      Commit message
+    required: false
+    default: "commit changes"
+  publish_branch:
+    description: 'Set a target branch for deployment.'
+    required: false
+  publish_dir:
+    description: 'Set an input directory for deployment.'
+    required: false
+    default: 'public'
+  destination_dir:
+    description: 'Set an destination subdirectory for deployment.'
+    required: false
+    default: ''
+  external_repository:
+    description: 'Set an external repository (owner/repo).'
+    required: false
+  cname:
+    description: 'Set custom domain'
+    required: false
+runs:
+  using: composite
+  steps:
+    # Install suzuki-shunsuke/ghcp by aqua
+    - run: echo "value=$GITHUB_ACTION_PATH/aqua/aqua.yaml" >> "$GITHUB_OUTPUT"
+      id: aqua_config
+      shell: bash
+    - uses: aquaproj/aqua-installer@e2d0136abcf70b7a2f6f505720640750557c4b33 # v3.1.1
+      with:
+        aqua_version: v2.45.0
+        skip_install_aqua: "true"
+      env:
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+
+    - shell: bash
+      id: repo_name
+      run: |
+        repo=${REPOSITORY:-$GITHUB_REPOSITORY}
+        echo "value=${repo#*/}" >> "$GITHUB_OUTPUT"
+      env:
+        REPOSITORY: ${{ inputs.external_repository }}
+
+    - shell: bash
+      id: dir
+      run: echo "value=.gh-pages-action-$GITHUB_RUN_ID" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        repository: ${{ inputs.external_repository }}
+        ref: ${{ inputs.publish_branch }}
+        persist-credentials: false
+        path: ${{ steps.dir.outputs.value }}
+        sparse-checkout: |
+          ${{ inputs.destination_dir }}
+
+    - uses: suzuki-shunsuke/github-token-action@350d7506222e3a0016491abe85b5c4dd475b67d1 # v0.2.1
+      id: token
+      with:
+        github_token: ${{inputs.github_token}}
+        github_app_id: ${{inputs.app_id}}
+        github_app_private_key: ${{inputs.app_private_key}}
+        default_github_token: ${{github.token}}
+        github_app_permissions: >-
+          {
+            "contents": "write"
+          }
+        github_app_repositories: >-
+          [
+            "${{steps.repo_name.outputs.value}}"
+          ]
+
+    - shell: bash
+      run: ghcp -v
+      env:
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+        GITHUB_TOKEN: ${{ steps.token.outputs.token }}
+
+    # Commit changes
+    - shell: bash
+      env:
+        GITHUB_TOKEN: ${{ steps.token.outputs.token }}
+        AQUA_CONFIG: ${{ steps.aqua_config.outputs.value }}
+        MESSAGE: ${{ inputs.commit_message }}
+        BRANCH_NAME: ${{ inputs.publish_branch }}
+        REPOSITORY: ${{ inputs.external_repository }}
+        SOURCE: ${{ inputs.publish_dir }}
+        DEST: ${{ inputs.destination_dir }}
+        DIR: ${{ steps.dir.outputs.value }}
+      run: |
+        default_branch=${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}
+        branch=${BRANCH_NAME:-${default_branch}}
+        repo=${REPOSITORY:-$GITHUB_REPOSITORY}
+
+        rm -Rf "$DIR/$DEST"
+        cp -R "$SOURCE" "$DIR/$DEST"
+        pushd "$DIR"
+
+        tempfile=$(mktemp)
+        git ls-files --modified --others --exclude-standard "$DEST" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
+        if grep -q "Nothing to commit" "$tempfile"; then
+          exit 0
+        fi
+
+        popd
+        rm -Rf "$DIR"
+
+        if [ "$repo" != "$GITHUB_REPOSITORY" ] || [ "$branch" != "$default_branch"  ]; then
+          exit 0
+        fi
+        exit 1
