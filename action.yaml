@@ -157,12 +157,11 @@ runs:
 
         tempfile=$(mktemp)
         git ls-files --modified --others --exclude-standard "$DEST" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
+        popd
+        rm -Rf "$DIR"
         if grep -q "Nothing to commit" "$tempfile"; then
           exit 0
         fi
-
-        popd
-        rm -Rf "$DIR"
 
         if [ "$repo" != "$GITHUB_REPOSITORY" ] || [ "$branch" != "$default_branch"  ]; then
           exit 0
