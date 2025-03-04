@@ -1,5 +1,5 @@
-name: GitHub Pages
-description: GitHub Pages
+name: GitHub Pages Release action
+description: Release GitHub Pages
 author: Shunsuke Suzuki
 branding:
   icon: git-commit
