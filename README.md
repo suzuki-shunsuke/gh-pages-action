@@ -54,7 +54,7 @@ jobs:
       # ...
 
       - name: Push changes to the remote branch
-        uses: suzuki-shunsuke/gh-pages-action@main
+        uses: suzuki-shunsuke/gh-pages-action@6229a3f8d89389da5c234aab3b37ba51a7fee3f6 # v0.0.1
         with:
           publish_dir: build
           destination_dir: docs
@@ -66,7 +66,7 @@ jobs:
 You can also pass a GitHub access token or a pair of GitHub App ID and private key.
 
 ```yaml
-- uses: suzuki-shunsuke/gh-pages-action@main
+- uses: suzuki-shunsuke/gh-pages-action@6229a3f8d89389da5c234aab3b37ba51a7fee3f6 # v0.0.1
   with:
     app_id: ${{secrets.APP_ID}}
     app_private_key: ${{secrets.APP_PRIVATE_KEY}}
