@@ -149,14 +149,14 @@ runs:
         cp -R "$SOURCE" "$DIR/$DEST"
         pushd "$DIR"
 
-        touch "$DEST/.nojekyll"
+        touch "${DEST:-.}/.nojekyll"
 
         if [ -n "$CNAME" ]; then
           echo "$CNAME" > "$DEST/CNAME"
         fi
 
         tempfile=$(mktemp)
-        git ls-files --modified --others --exclude-standard "$DEST" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
+        git ls-files --modified --others --exclude-standard "${DEST:-.}" | xargs -r ghcp commit -r "$repo" -D -m "$MESSAGE" -b "$branch" 2> >(tee -a "$tempfile" >&2)
         popd
         rm -Rf "$DIR"
         if grep -q "Nothing to commit" "$tempfile"; then
