@@ -62,6 +62,7 @@ runs:
           ${{ inputs.destination_dir }}
 
     - shell: bash
+      id: files
       env:
         SOURCE: ${{ inputs.publish_dir }}
         DEST: ${{ inputs.destination_dir }}
@@ -77,6 +78,9 @@ runs:
         if [ -n "$CNAME" ]; then
           echo "$CNAME" > "$DEST/CNAME"
         fi
+        echo "files<<EOF"
+        git ls-files --modified --others --exclude-standard "${DEST:-.}"
+        echo "EOF"
 
     # Commit changes
     - uses: suzuki-shunsuke/commit-action@eba143cd31bc6b7f7844c4a2672ad321e91061f1 # v0.0.9
@@ -86,6 +90,7 @@ runs:
         app_private_key: ${{ inputs.app_private_key }}
         repository: ${{ inputs.external_repository }}
         branch: ${{ inputs.publish_branch }}
+        files: ${{ steps.files.outputs.files }}
         commit_message: |
           deploy: ${{ github.repository }}@${{ github.sha }}
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
