@@ -83,7 +83,7 @@ runs:
         echo "EOF"
 
     # Commit changes
-    - uses: suzuki-shunsuke/commit-action@pr/180
+    - uses: suzuki-shunsuke/commit-action@ca8e761ccb3533295065c3e90a8555fcdde8b467 # v0.0.10
       with:
         github_token: ${{ inputs.github_token }}
         app_id: ${{ inputs.app_id }}
