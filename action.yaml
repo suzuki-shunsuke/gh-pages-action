@@ -36,6 +36,13 @@ inputs:
   cname:
     description: 'Set custom domain'
     required: false
+
+  securefix_action_server_repository:
+    required: false
+    default: ''
+    description: |
+      The GitHub repository for the Securefix Action server.
+      https://github.com/csm-actions/securefix-action
 runs:
   using: composite
   steps:
@@ -84,6 +91,7 @@ runs:
 
     # Commit changes
     - uses: suzuki-shunsuke/commit-action@ca8e761ccb3533295065c3e90a8555fcdde8b467 # v0.0.10
+      if: inputs.securefix_action_server_repository == ''
       with:
         github_token: ${{ inputs.github_token }}
         app_id: ${{ inputs.app_id }}
@@ -92,6 +100,20 @@ runs:
         branch: ${{ inputs.publish_branch }}
         files: ${{ steps.files.outputs.files }}
         root_dir: ${{ steps.dir.outputs.value }}
+        commit_message: |
+          deploy: ${{ github.repository }}@${{ github.sha }}
+          ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    - uses: csm-actions/securefix-action@pr/208
+      if: inputs.securefix_action_server_repository != ''
+      with:
+        app_id: ${{ inputs.app_id }}
+        app_private_key: ${{ inputs.app_private_key }}
+        repository: ${{ inputs.external_repository }}
+        branch: ${{ inputs.publish_branch }}
+        files: ${{ steps.files.outputs.files }}
+        root_dir: ${{ steps.dir.outputs.value }}
+        server_repository: ${{ inputs.securefix_action_server_repository }}
         commit_message: |
           deploy: ${{ github.repository }}@${{ github.sha }}
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
