@@ -104,7 +104,7 @@ runs:
           deploy: ${{ github.repository }}@${{ github.sha }}
           ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-    - uses: csm-actions/securefix-action@4f3e711a06d7d5a3f5527cc622f6c75362fec74b # v0.3.6
+    - uses: csm-actions/securefix-action@949d3cfb554abee10f695014674759978ba8ba34 # v0.4.1
       if: inputs.securefix_action_server_repository != ''
       with:
         app_id: ${{ inputs.app_id }}
