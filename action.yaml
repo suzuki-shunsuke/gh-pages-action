@@ -90,7 +90,7 @@ runs:
         echo "EOF"
 
     # Commit changes
-    - uses: suzuki-shunsuke/commit-action@44cc32c01e261a029c0161ff908a3a2895bfc46f # v0.1.2
+    - uses: suzuki-shunsuke/commit-action@06e3b49d4706498d325d29bd85adc82ecf2f5d8f # v1.0.0
       if: inputs.securefix_action_server_repository == ''
       with:
         github_token: ${{ inputs.github_token }}
